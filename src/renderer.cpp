@@ -6,15 +6,25 @@
 
 static cv::VideoWriter g_writer;
 static bool g_initialized = false;
+static std::string g_current_file;
 
-bool render_particles(const NBodyState& s, int width, int height, int step)
+bool render_particles(
+    const NBodyState& s,
+    int width,
+    int height,
+    int step,
+    const char* output_file,
+    const char* mode_label
+)
 {
     cv::Mat frame(height, width, CV_8UC3, cv::Scalar(0, 0, 0));
 
+    float world_radius = 5.0f;
+
     for (int i = 0; i < s.n; i++)
     {
-        int px = static_cast<int>((s.x[i] + 1.0f) * 0.5f * width);
-        int py = static_cast<int>((s.y[i] + 1.0f) * 0.5f * height);
+        int px = static_cast<int>(((s.x[i] + world_radius) / (2.0f * world_radius)) * width);
+        int py = static_cast<int>(((s.y[i] + world_radius) / (2.0f * world_radius)) * height);
 
         py = height - py;
 
@@ -24,7 +34,8 @@ bool render_particles(const NBodyState& s, int width, int height, int step)
         }
     }
 
-    std::string label = "Step: " + std::to_string(step) +
+    std::string label = std::string("Mode: ") + mode_label +
+                        "   Step: " + std::to_string(step) +
                         "   Particles: " + std::to_string(s.n);
 
     cv::putText(frame,
@@ -37,15 +48,18 @@ bool render_particles(const NBodyState& s, int width, int height, int step)
 
     if (!g_initialized)
     {
-        const std::string filename = "output.avi";
-        int fourcc = cv::VideoWriter::fourcc('M', 'J', 'P', 'G');
+        g_current_file = output_file;
 
-        bool ok = g_writer.open(filename, fourcc, 30, cv::Size(width, height));
+        bool ok = g_writer.open(
+            output_file,
+            cv::VideoWriter::fourcc('M', 'J', 'P', 'G'),
+            30,
+            cv::Size(width, height)
+        );
 
         if (!ok)
         {
-            std::cerr << "Error: could not open " << filename << " for writing.\n";
-            std::cerr << "Try checking codec support or write permissions.\n";
+            std::cerr << "Error: could not open " << output_file << " for writing.\n";
             return false;
         }
 
@@ -62,5 +76,6 @@ void close_renderer()
     {
         g_writer.release();
         g_initialized = false;
+        g_current_file.clear();
     }
 }

@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+#include <string>
 #include "nbody.h"
 #include "utils.h"
 
@@ -57,4 +58,28 @@ void print_state_sample(const NBodyState& s, int count) {
             << "  mass=" << s.mass[i]
             << '\n';
     }
+}
+
+ProgramOptions parse_args(int argc, char** argv) {
+    ProgramOptions opts;
+
+    for (int i = 1; i < argc; i++) {
+        std::string arg = argv[i];
+
+        if (arg == "--cpu") {
+            opts.use_gpu = false;
+        } else if (arg == "--gpu") {
+            opts.use_gpu = true;
+        } else if (arg == "--visualize") {
+            opts.visualize = true;
+        } else if (arg == "--n" && i + 1 < argc) {
+            opts.n = std::stoi(argv[++i]);
+        } else if (arg == "--steps" && i + 1 < argc) {
+            opts.steps = std::stoi(argv[++i]);
+        } else if (arg == "--render-interval" && i + 1 < argc) {
+            opts.render_interval = std::stoi(argv[++i]);
+        }
+    }
+
+    return opts;
 }
