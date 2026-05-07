@@ -47,5 +47,6 @@ This project requires an NVIDIA GPU to run. This project was developed and teste
 ## Locations and methods
 - The main **CUDA kernel** is located in src/nbody_gpu.cu
 - **Benchmarking** is done by running the same commands but changing `--cpu` and `--gpu`
+    - The program outputs simulation time for each run
     - `--visualize`, `--render-interval` and `--random` are not used during this
 - The **demo** is generated in video format as `cpu_output.avi` and `gpu_output.avi`
