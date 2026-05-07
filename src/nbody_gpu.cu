@@ -59,14 +59,13 @@ void copy_positions_to_host(const NBodyState& d, NBodyState& h) {
     CUDA_CHECK(cudaMemcpy(h.y, d.y, d.n * sizeof(float), cudaMemcpyDeviceToHost));
 }
 
-__global__ void nbody_tiled_kernel(
+__global__ void compute_forces_tiled_kernel(
     int n,
-    float* x,
-    float* y,
-    float* vx,
-    float* vy,
+    const float* x,
+    const float* y,
     const float* mass,
-    float dt,
+    float* ax,
+    float* ay,
     float G,
     float softening)
 {
@@ -77,16 +76,13 @@ __global__ void nbody_tiled_kernel(
     float* sh_m = &shared[2 * blockDim.x];
 
     int i = blockIdx.x * blockDim.x + threadIdx.x;
+    bool active = (i < n);
 
-    if (i >= n) {
-        return;
-    }
+    float xi = active ? x[i] : 0.0f;
+    float yi = active ? y[i] : 0.0f;
 
-    float xi = x[i];
-    float yi = y[i];
-
-    float ax = 0.0f;
-    float ay = 0.0f;
+    float fx = 0.0f;
+    float fy = 0.0f;
 
     for (int tile = 0; tile < n; tile += blockDim.x) {
         int j = tile + threadIdx.x;
@@ -103,54 +99,104 @@ __global__ void nbody_tiled_kernel(
 
         __syncthreads();
 
-        int tile_size = min(blockDim.x, n - tile);
+        if (active) {
+            int tile_size = min(blockDim.x, n - tile);
 
-        for (int k = 0; k < tile_size; k++) {
-            int j_global = tile + k;
+            for (int k = 0; k < tile_size; k++) {
+                int j_global = tile + k;
 
-            if (j_global == i) {
-                continue;
+                if (j_global == i) {
+                    continue;
+                }
+
+                float dx = sh_x[k] - xi;
+                float dy = sh_y[k] - yi;
+
+                float dist2 = dx * dx + dy * dy + softening;
+                float invDist = rsqrtf(dist2);
+                float invDist3 = invDist * invDist * invDist;
+
+                float scale = G * sh_m[k] * invDist3;
+
+                fx += dx * scale;
+                fy += dy * scale;
             }
-
-            float dx = sh_x[k] - xi;
-            float dy = sh_y[k] - yi;
-
-            float dist2 = dx * dx + dy * dy + softening;
-            float invDist = rsqrtf(dist2);
-            float invDist3 = invDist * invDist * invDist;
-
-            float scale = G * sh_m[k] * invDist3;
-
-            ax += dx * scale;
-            ay += dy * scale;
         }
 
         __syncthreads();
     }
 
-    vx[i] += ax * dt;
-    vy[i] += ay * dt;
+    if (active) {
+        ax[i] = fx;
+        ay[i] = fy;
+    }
+}
+
+__global__ void update_particles_kernel(
+    int n,
+    float* x,
+    float* y,
+    float* vx,
+    float* vy,
+    const float* ax,
+    const float* ay,
+    float dt)
+{
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (i >= n) {
+        return;
+    }
+
+    vx[i] += ax[i] * dt;
+    vy[i] += ay[i] * dt;
 
     x[i] += vx[i] * dt;
     y[i] += vy[i] * dt;
 }
 
 void gpu_step(NBodyState& d, const SimParams& p) {
+    static float* d_ax = nullptr;
+    static float* d_ay = nullptr;
+    static int allocated_n = 0;
+
+    if (allocated_n != d.n) {
+        if (d_ax) CUDA_CHECK(cudaFree(d_ax));
+        if (d_ay) CUDA_CHECK(cudaFree(d_ay));
+
+        CUDA_CHECK(cudaMalloc(&d_ax, d.n * sizeof(float)));
+        CUDA_CHECK(cudaMalloc(&d_ay, d.n * sizeof(float)));
+
+        allocated_n = d.n;
+    }
+
     int threads = 256;
     int blocks = (d.n + threads - 1) / threads;
 
     size_t shared_bytes = 3 * threads * sizeof(float);
 
-    nbody_tiled_kernel<<<blocks, threads, shared_bytes>>>(
+    compute_forces_tiled_kernel<<<blocks, threads, shared_bytes>>>(
+        d.n,
+        d.x,
+        d.y,
+        d.mass,
+        d_ax,
+        d_ay,
+        p.G,
+        p.softening
+    );
+
+    CUDA_CHECK(cudaGetLastError());
+
+    update_particles_kernel<<<blocks, threads>>>(
         d.n,
         d.x,
         d.y,
         d.vx,
         d.vy,
-        d.mass,
-        p.dt,
-        p.G,
-        p.softening
+        d_ax,
+        d_ay,
+        p.dt
     );
 
     CUDA_CHECK(cudaGetLastError());
