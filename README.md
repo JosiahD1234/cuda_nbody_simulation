@@ -44,7 +44,7 @@ implemented for comparison purposes.
 This project requires an NVIDIA GPU to run. This project was developed and tested on NCSA Delta. If you are using this same environment, you may need to run `module load opencv`.
 
 ## Locations and methods
-- The main **CUDA kernel** is located in src/nbody_gpu.cu
+- The main **CUDA kernel** is located in `src/nbody_gpu.cu`
 - **Benchmarking** is done by running the same commands but changing `--cpu` and `--gpu`
     - The program outputs simulation time for each run
     - `--visualize`, `--render-interval` and `--random` are not used during this to improve measurement accuracy
