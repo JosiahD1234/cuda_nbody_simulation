@@ -1,18 +1,23 @@
-# Cuda N-Body Simulation
+# CUDA N-Body Simulation
 
 ## How to build
 
-1. From the project root directory, run
-    `make`
-2. This creates the executible
-    `build/nbody`
+1. From the project root directory, run:
+    ```bash
+    make
+2. This creates the executable
+    ```bash
+    build/nbody
 3. To clean build files, run
-    `make clean`
+    ```bash
+    make clean
 
 ## How to run
 
 ### Base command
-- `./build/nbody`
+
+    ```bash
+    ./build/nbody
 
 ### Flags
 - `--cpu` - Use the CPU implementation
@@ -21,6 +26,8 @@
 - `--steps [number]` - Number of simulation steps
 - `--random` - Use a random seed for starting positions
 - `--visualize` - Create a simulation video
+    - Videos are saved to `cpu_output.avi` or `gpu_output.avi`
+    - This should **not** be used for benchmarking
 - `--render-interval [number]` - Number of simulation steps between each output frame
 
 ## Required packages / dependencies
