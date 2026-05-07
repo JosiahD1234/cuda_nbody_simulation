@@ -1,4 +1,7 @@
 # CUDA N-Body Simulation
+This project implements an N-body simulation in CUDA to demonstrate how this problem can be accelerated
+with a GPU. A video demonstration can be generated to view the simulation, and a CPU version has been
+implemented for comparison purposes.
 
 ## How to build
 
@@ -27,6 +30,8 @@
 ### Example commands
 ```bash
 ./build/nbody --gpu --n 100 --steps 1000 --random
+```
+```bash
 ./build/nbody --cpu --n 100 --steps 1000 --visualize --render-interval 10
 ```
 
@@ -38,3 +43,9 @@
 
 ## Required hardware / software environment
 This project requires an NVIDIA GPU to run. This project was developed and tested on NCSA Delta. If you are using this same environment, you may need to run `module load opencv`.
+
+## Locations and methods
+- The main **CUDA kernel** is located in src/nbody_gpu.cu
+- **Benchmarking** is done by running the same commands but changing `--cpu` and `--gpu`
+    - `--visualize`, `--render-interval` and `--random` are not used during this
+- The **demo** is generated in video format as `cpu_output.avi` and `gpu_output.avi`
