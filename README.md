@@ -11,4 +11,16 @@
 
 ## How to run
 
+### Base command
+`./build/nbody`
+
+### Flags
+- `--cpu` - Use the CPU implementation
+- `--gpu` - Use the GPU implementation
+- `--n [number]` - Number of bodies
+- `--steps [number]` - Number of simulation steps
+- `--random` - Use a random seed for starting positions
+- `--visualize` - Create a simulation video
+- `--render-interval` - Number of simulation steps between each output frame
+
 ## Required packages / dependencies
