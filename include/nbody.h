@@ -18,7 +18,7 @@ struct SimParams {
 
 void allocate_host_state(NBodyState& s, int n);
 void free_host_state(NBodyState& s);
-void initialize_particles(NBodyState& s, float world_size);
+void initialize_particles(NBodyState& s, float world_size, bool use_random);
 
 void cpu_step(NBodyState& s, const SimParams& p);
 

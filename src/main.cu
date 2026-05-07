@@ -26,12 +26,15 @@ int main(int argc, char** argv) {
     const int height = 800;
 
     allocate_host_state(host, opts.n);
-    initialize_particles(host, 0.5f);
+    initialize_particles(host, 0.5f, opts.use_random);
 
     std::cout << "Mode: " << (opts.use_gpu ? "GPU" : "CPU") << "\n";
     std::cout << "Particles: " << opts.n << "\n";
     std::cout << "Steps: " << opts.steps << "\n";
     std::cout << "Visualization: " << (opts.visualize ? "on" : "off") << "\n";
+    std::cout << "Initialization: "
+          << (opts.use_random ? "random" : "deterministic")
+          << "\n";
     if (opts.visualize) {
         std::cout << "Output video: " << output_file << "\n";
     }

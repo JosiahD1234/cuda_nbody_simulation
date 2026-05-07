@@ -33,8 +33,12 @@ static float rand_float(float a, float b) {
     return a + (b - a) * (static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX));
 }
 
-void initialize_particles(NBodyState& s, float world_size) {
-    std::srand(static_cast<unsigned>(std::time(nullptr)));
+void initialize_particles(NBodyState& s, float world_size, bool use_random) {
+    if (use_random) {
+        std::srand(static_cast<unsigned>(std::time(nullptr)));
+    } else {
+        std::srand(12345);  // fixed seed
+    }
 
     for (int i = 0; i < s.n; i++) {
         s.x[i] = rand_float(-world_size, world_size);
@@ -78,6 +82,8 @@ ProgramOptions parse_args(int argc, char** argv) {
             opts.steps = std::stoi(argv[++i]);
         } else if (arg == "--render-interval" && i + 1 < argc) {
             opts.render_interval = std::stoi(argv[++i]);
+        } else if (arg == "--random") {
+            opts.use_random = true;
         }
     }
 

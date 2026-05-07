@@ -10,6 +10,7 @@ struct ProgramOptions {
     bool use_gpu = true;
     bool visualize = false;
     int render_interval = 10;
+    bool use_random = false;
 };
 
 ProgramOptions parse_args(int argc, char** argv);
