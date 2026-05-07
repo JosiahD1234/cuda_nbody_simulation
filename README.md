@@ -29,5 +29,5 @@
 - OpenCV
 - Make
 
-## Required hardware / software enfironment
+## Required hardware / software environment
 This project requires an NVIDIA GPU to run. This project was developed and tested on NCSA Delta. If you are using this same environment, you may need to run `module load opencv`.
