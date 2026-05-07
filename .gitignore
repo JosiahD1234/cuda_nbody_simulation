@@ -1,2 +1,5 @@
 *.avi
-build
+build/
+*.o
+__MACOSX/
+.DS_Store
