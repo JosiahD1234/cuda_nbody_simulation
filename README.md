@@ -5,10 +5,8 @@
 1. From the project root directory, run:
     ```bash
     make
-2. This creates the executable
-    ```bash
-    build/nbody
-3. To clean build files, run
+2. This creates the executable `build/nbody`
+3. To clean build files, run:
     ```bash
     make clean
 
@@ -16,8 +14,9 @@
 
 ### Base command
 
-    ```bash
-    ./build/nbody
+```bash
+./build/nbody
+```
 
 ### Flags
 - `--cpu` - Use the CPU implementation
